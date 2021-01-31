@@ -1,0 +1,11 @@
+/lib/__pychache__/
+.DS_Store
+.git/
+.idea/.gitignore
+.idea/encodings.xml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/recRadio.iml
+.idea/vcs.xml
+venv/

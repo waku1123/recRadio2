@@ -1,0 +1,13 @@
+[Unit]
+Description = Net Radio Recording
+After = network.target
+
+[Service]
+User = admin
+WorkingDirectory = /home/admin/bin/recRadio
+ExecStart = /home/admin/.local/bin/pipenv run start
+Restart = no
+Type = simple
+
+[Install]
+WantedBy = multi-user.target
