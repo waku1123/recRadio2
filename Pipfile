@@ -8,7 +8,6 @@ start = "python run.py"
 test = "bash -c \"cp 'conf/example_config.json' 'conf/config.json'; python -m unittest discover\""
 
 [dev-packages]
-balck = "*"
 
 [packages]
 beautifulsoup4 = "*"
