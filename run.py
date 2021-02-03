@@ -5,15 +5,16 @@ from multiprocessing import Process
 import signal
 import time
 import datetime as dt
+from typing import List, Final
 
 saveroot = ""
 T_BASELINE = dt.timedelta(seconds=60)
 T_ZERO = dt.timedelta()
-keywords = []
+keywords: List = []
 config = None
 
 
-def main_radiko():
+def main_radiko() -> None:
     global keywords
     print("call main_radiko")
     radiko_entity = radiko.Radiko()
@@ -33,18 +34,24 @@ def main_radiko():
                 elif tmp_time < T_BASELINE:
                     # 放送開始まで60秒を切っている
                     auth_token = radiko_entity.authorization()
-                    p = Process(target=radiko_entity.rec,
-                                args=([data, tmp_time.total_seconds(), auth_token, saveroot],))
+                    p = Process(
+                        target=radiko_entity.rec,
+                        args=([data, tmp_time.total_seconds(), auth_token, saveroot],),
+                    )
                     p.start()
                     radiko_data.remove(data)
         # radikoは毎日6時に番組表を更新する
-        if now.hour == 6 and now.minute <= 5 and radiko_entity.reload_date != dt.date.today():
+        if (
+            now.hour == 6
+            and now.minute <= 5
+            and radiko_entity.reload_date != dt.date.today()
+        ):
             radiko_entity.reload_program()
             radiko_data = radiko_entity.search()
         time.sleep(60)
 
 
-def main_agqr():
+def main_agqr() -> None:
     global keywords
     print("call main_agqr")
     agqr_entity = agqr.Agqr()
@@ -63,11 +70,18 @@ def main_agqr():
                     agqr_data.remove(data)
                 elif tmp_time < T_BASELINE:
                     # 放送開始まで60秒を切っている
-                    p = Process(target=agqr_entity.rec, args=([data, tmp_time.total_seconds(), saveroot],))
-                    p.start() # 録音プロセス開始
+                    p = Process(
+                        target=agqr_entity.rec,
+                        args=([data, tmp_time.total_seconds(), saveroot],),
+                    )
+                    p.start()  # 録音プロセス開始
                     agqr_data.remove(data)
         # A&Gは毎日0時に番組表を更新
-        if now.hour == 0 and now.minute <= 5 and agqr_entity.reload_date != dt.date.today():
+        if (
+            now.hour == 0
+            and now.minute <= 5
+            and agqr_entity.reload_date != dt.date.today()
+        ):
             agqr_entity.reload_program()
             agqr_data = agqr_entity.search()
         time.sleep(60)
@@ -87,7 +101,8 @@ def main_agqr():
 #                 print("in onsen, hibiki. there aren't new title.")
 #         time.sleep(300)
 
-def signal_handler(signal, handler):
+
+def signal_handler(signal: int, handler):
     for i in ps:
         i.terminate()
     exit(0)
@@ -96,19 +111,11 @@ def signal_handler(signal, handler):
 if __name__ == "__main__":
     config = f.load_configurations()
     saveroot = f.create_save_dir_path(config["all"]["savedir"])
-    print("saveroot : " + saveroot)
+    print(f"saveroot : {saveroot}")
     keywords = config["all"]["keywords"]
-    print("config keywords :" + str(keywords))
-    # ps = [
-    #     Process(target=main_radiko),
-    #     Process(target=main_agqr),
-    #     Process(target=main_onsen_hibiki)
-    # ]
-    ps = [
-        Process(target=main_radiko),
-        Process(target=main_agqr)
-    ]
-    signal.signal(signal.SIGINT,  signal_handler)
+    print(f"config keywords :{str(keywords)}")
+    ps: List = [Process(target=main_radiko), Process(target=main_agqr)]
+    signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     for i in ps:
         i.start()
